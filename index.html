@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,20 +9,25 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <div class="game">
   <h1>🐹 Hamster Garden</h1>
   <p>Your little hamster is waiting for you!</p>
+
   <div class="hamster" id="hamster">🐹</div>
+
   <h2 id="level">Level 1</h2>
   <p>Experience: <span id="xp">0</span> XP</p>
+
   <div class="garden" id="garden">🌱 🌷 🌱 🌼 🌱</div>
+
   <button onclick="feed()">🥕 Feed hamster</button>
   <button onclick="water()">💧 Water garden</button>
+
   <p id="message">Welcome to your garden!</p>
 </div>
-<script src="script.js"></script>
-</body>
-<section id="liveRace" style="background:#173d30;color:white;padding:20px;border-radius:18px;margin-top:20px">
+
+<section id="liveRace" style="background:#173d30;color:white;padding:20px;border-radius:18px;margin:20px auto;max-width:500px">
   <h2>🏁 Live Hamster Race</h2>
   <p id="chainStatus">Connecting to Squeekchain...</p>
   <h3>📡 Blockchain Data</h3>
@@ -30,4 +36,6 @@
   <p id="lastUpdated">Not updated yet</p>
 </section>
 
+<script src="script.js"></script>
+</body>
 </html>
