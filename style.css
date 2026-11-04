@@ -1,0 +1,122 @@
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #d8f3dc, #95d5b2);
+  color: #24452e;
+  text-align: center;
+}
+
+.game {
+  max-width: 650px;
+  margin: 20px auto;
+  padding: 25px;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+h1 {
+  color: #267346;
+  font-size: 32px;
+}
+
+.hamster {
+  font-size: 100px;
+  margin: 20px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.garden {
+  padding: 20px;
+  margin: 20px 0;
+  background: #e8f5e9;
+  border-radius: 15px;
+  font-size: 35px;
+}
+
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 13px 20px;
+  margin: 7px;
+  background: #31965b;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #217444;
+}
+
+#message {
+  min-height: 25px;
+  font-weight: bold;
+}
+
+#liveRace {
+  max-width: 650px;
+  margin: 25px auto;
+  padding: 25px;
+  background: #183b2b;
+  color: white;
+  border-radius: 20px;
+  text-align: left;
+}
+
+#liveRace h2 {
+  text-align: center;
+  color: #a7f3b5;
+}
+
+#chainStatus {
+  padding: 12px;
+  background: #28583e;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+#chainData {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.7;
+  background: #10291e;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+#lastUpdated {
+  color: #b9d9c3;
+  font-size: 12px;
+}
+
+#extraFeatures {
+  margin-top: 20px;
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 10px;
+  }
+
+  .game, #liveRace {
+    padding: 15px;
+  }
+
+  h1 {
+    font-size: 26px;
+  }
+}
