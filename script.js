@@ -156,3 +156,40 @@ async function refreshSqueek() {
 
 refreshSqueek();
 setInterval(refreshSqueek, 30000);
+
+async function showRaceDashboard() {
+  const box = document.getElementById("chainData");
+  const status = document.getElementById("chainStatus");
+
+  if (!box || !status) return;
+
+  try {
+    const response = await fetch(
+      "https://api.squeekchain.com/v1/status"
+    );
+
+    if (!response.ok) throw new Error("API error");
+
+    const data = await response.json();
+    const m = data.measurement || {};
+    const b = data.builder?.anchor || {};
+
+    status.textContent = "🟢 Squeekchain Online";
+
+    box.textContent =
+      "🐹 HAMSTER GARDEN LIVE DASHBOARD\n\n" +
+      "🌐 Network: Sepolia\n" +
+      "📡 Status: " + m.freshness + "\n" +
+      "⛓️ Block Height: " + (b.blockHeight ?? "Unknown") + "\n" +
+      "📊 Block Progress: " + (b.blockProgress ?? "Unknown") + "\n" +
+      "⚡ Total Work Units: " + (m.cumulativeWorkUnits ?? "Unknown") + "\n" +
+      "🔐 Oracle: " + (data.oracle?.state ?? "Unknown") + "\n" +
+      "🕒 Updated: " + new Date().toLocaleString();
+  } catch (error) {
+    status.textContent = "⚠️ API temporarily unavailable";
+    box.textContent = error.message;
+  }
+}
+
+showRaceDashboard();
+setInterval(showRaceDashboard, 30000);
