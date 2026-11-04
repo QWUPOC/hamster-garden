@@ -178,6 +178,10 @@ window.refreshSqueek = refreshSqueek;
 
 // Start game
 document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("feedButton").addEventListener("click", feed);
+  document.getElementById("waterButton").addEventListener("click", water);
+  document.getElementById("refreshButton").addEventListener("click", refreshSqueek);
+
   updateGame();
   refreshSqueek();
   setInterval(refreshSqueek, 30000);
