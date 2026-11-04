@@ -1,41 +1,162 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hamster Garden</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#174b32">
+  <meta name="description" content="Grow your garden, care for your hamster and explore live Squeekchain data.">
+  <title>Hamster Garden</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
+  <main class="app">
+    <header class="hero">
+      <div class="brand">🌿 HAMSTER GARDEN</div>
+      <h1>Your little garden adventure</h1>
+      <p>Take care of your hamster and grow a beautiful garden.</p>
+    </header>
 
-<div class="game">
-  <h1>🐹 Hamster Garden</h1>
-  <p>Your little hamster is waiting for you!</p>
+    <section class="game card" aria-label="Hamster game">
+      <div class="hamster-area">
+        <div class="hamster" id="hamster" aria-label="Hamster">🐹</div>
+        <h2 id="level">Level 1</h2>
+        <p><strong id="xp">0</strong> XP</p>
+        <div class="progress-track">
+          <div id="xpProgress" class="progress-fill"></div>
+        </div>
+        <p id="levelProgress" class="muted">0 / 100 XP to next level</p>
+      </div>
 
-  <div class="hamster" id="hamster">🐹</div>
+      <div class="garden" id="garden" aria-label="Your garden">
+        🌱 🌷 🌱 🌼 🌱
+      </div>
 
-  <h2 id="level">Level 1</h2>
-  <p>Experience: <span id="xp">0</span> XP</p>
+      <div class="actions">
+        <button id="feedButton" type="button">🥕 Feed hamster</button>
+        <button id="waterButton" type="button">💧 Water garden</button>
+      </div>
 
-  <div class="garden" id="garden">🌱 🌷 🌱 🌼 🌱</div>
+      <p id="message" class="message" role="status" aria-live="polite">
+        Welcome to your garden!
+      </p>
 
-  <button onclick="feed()">🥕 Feed hamster</button>
-  <button onclick="water()">💧 Water garden</button>
+      <section id="extraFeatures" class="extra-features">
+        <h3>🌞 Daily Quests</h3>
+        <div class="quest">
+          <span>🥕 Feed hamster</span>
+          <strong id="feedQuest">0 / 3</strong>
+        </div>
+        <div class="quest">
+          <span>💧 Water garden</span>
+          <strong id="waterQuest">0 / 3</strong>
+        </div>
+        <hr>
+        <h3>📊 Garden Statistics</h3>
+        <div class="stats">
+          <div><span>Total carrots</span><strong id="carrotTotal">0</strong></div>
+          <div><span>Total watering</span><strong id="waterTotal">0</strong></div>
+          <div><span>Total XP</span><strong id="totalXP">0</strong></div>
+        </div>
+        <hr>
+        <h3>🏆 Achievements</h3>
+        <div id="achievements" class="achievements"></div>
+      </section>
+    </section>
 
-  <p id="message">Welcome to your garden!</p>
-</div>
+    <section id="liveRace" class="card blockchain">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">SQUEEKCHAIN</span>
+          <h2>⛓️ Live Network Data</h2>
+        </div>
+        <span id="apiIndicator" class="indicator">Checking...</span>
+      </div>
 
-<section id="liveRace" style="background:#173d30;color:white;padding:20px;border-radius:18px;margin:20px auto;max-width:500px">
-  <h2>🏁 Live Hamster Race</h2>
-  <p id="chainStatus">Connecting to Squeekchain...</p>
-  <h3>📡 Blockchain Data</h3>
-  <pre id="chainData" style="white-space:pre-wrap;overflow-wrap:anywhere">Waiting for API...</pre>
-  <button onclick="refreshSqueek()">🔄 Refresh data</button>
-  <p id="lastUpdated">Not updated yet</p>
-</section>
+      <p id="chainStatus" role="status" aria-live="polite">
+        Connecting to Squeekchain...
+      </p>
 
-<script src="script.js"></script>
+      <div class="network-grid">
+        <div class="network-item">
+          <span>Network</span>
+          <strong id="networkName">—</strong>
+        </div>
+        <div class="network-item">
+          <span>Chain ID</span>
+          <strong id="chainId">—</strong>
+        </div>
+        <div class="network-item">
+          <span>Wheel status</span>
+          <strong id="wheelStatus">—</strong>
+        </div>
+        <div class="network-item">
+          <span>Core status</span>
+          <strong id="coreStatus">—</strong>
+        </div>
+      </div>
+
+      <h3>📡 Live Measurements</h3>
+      <div class="network-grid">
+        <div class="network-item">
+          <span>Wheel RPM</span>
+          <strong id="rpm">—</strong>
+        </div>
+        <div class="network-item">
+          <span>Speed</span>
+          <strong id="speed">—</strong>
+        </div>
+        <div class="network-item">
+          <span>Distance</span>
+          <strong id="distance">—</strong>
+        </div>
+        <div class="network-item">
+          <span>Work units</span>
+          <strong id="workUnits">—</strong>
+        </div>
+        <div class="network-item">
+          <span>Settled block</span>
+          <strong id="blockHeight">—</strong>
+        </div>
+        <div class="network-item">
+          <span>Builder block</span>
+          <strong id="builderBlock">—</strong>
+        </div>
+        <div class="network-item">
+          <span>Oracle</span>
+          <strong id="oracleStatus">—</strong>
+        </div>
+        <div class="network-item">
+          <span>Settlement queue</span>
+          <strong id="queueStatus">—</strong>
+        </div>
+      </div>
+
+      <h3>🔐 Latest confirmed transaction</h3>
+      <p id="transactionHash" class="hash">No transaction data available.</p>
+
+      <div class="api-actions">
+        <button id="refreshButton" type="button" class="secondary">
+          🔄 Refresh network data
+        </button>
+        <span id="lastUpdated" class="muted">Not updated yet</span>
+      </div>
+
+      <details>
+        <summary>View raw API response</summary>
+        <pre id="chainData">Waiting for live API response...</pre>
+      </details>
+
+      <p class="disclaimer">
+        Network information is requested directly from the Squeekchain API.
+        No blockchain values or transactions are simulated by this website.
+      </p>
+    </section>
+
+    <footer>
+      <p>🐹 Hamster Garden · Built for the Squeekchain community</p>
+      <p>Game progress is stored locally in this browser.</p>
+    </footer>
+  </main>
 </body>
 </html>
