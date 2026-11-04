@@ -115,3 +115,44 @@ updateGame();
 
 
 
+
+// ===== SQUEEKCHAIN LIVE API =====
+
+const SQUEEK_API = "https://api.squeekchain.com/v1";
+
+async function refreshSqueek() {
+  const statusBox = document.getElementById("chainStatus");
+  const dataBox = document.getElementById("chainData");
+  const updatedBox = document.getElementById("lastUpdated");
+
+  if (!statusBox || !dataBox) return;
+
+  statusBox.textContent = "Connecting to Squeekchain...";
+
+  try {
+    const response = await fetch(SQUEEK_API + "/status");
+
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
+
+    const data = await response.json();
+
+    statusBox.textContent =
+      "Squeekchain status: " +
+      (data.status || data.measurement?.freshness || "Available");
+
+    dataBox.textContent = JSON.stringify(data, null, 2);
+
+    updatedBox.textContent =
+      "Updated: " + new Date().toLocaleString();
+
+  } catch (error) {
+    statusBox.textContent = "Connection unavailable";
+    dataBox.textContent = error.message;
+    updatedBox.textContent = "Please try again later.";
+  }
+}
+
+refreshSqueek();
+setInterval(refreshSqueek, 30000);
