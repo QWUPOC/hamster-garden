@@ -1,97 +1,57 @@
 
-const KEY = "hamsterGardenV2";
-const API = "https://api.squeekchain.com/v1";
+"use strict";
 
-function getToday() {
+// HAMSTER GARDEN - compatible with current index.html
+
+const GAME_KEY = "hamsterGardenV3";
+const API_BASE = "https://api.squeekchain.com/v1";
+
+function todayKey() {
   const d = new Date();
-  return [
-    d.getFullYear(),
-    String(d.getMonth() + 1).padStart(2, "0"),
-    String(d.getDate()).padStart(2, "0")
-  ].join("-");
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-const today = getToday();
-
-let saved = {};
-
-try {
-  saved = JSON.parse(localStorage.getItem(KEY) || "{}");
-} catch (e) {
-  saved = {};
+function getNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : 0;
 }
 
-let game = {
-  xp: Number(saved.xp ?? localStorage.getItem("hamsterXP") ?? 0),
-  carrots: Number(saved.carrots ?? localStorage.getItem("hamsterCarrots") ?? 0),
-  waterCount: Number(saved.waterCount ?? localStorage.getItem("hamsterWater") ?? 0),
-  feedsToday: saved.date === today ? Number(saved.feedsToday || 0) : 0,
-  watersToday: saved.date === today ? Number(saved.watersToday || 0) : 0,
-  achievements: Array.isArray(saved.achievements) ? saved.achievements : []
-};
-
-function saveGame() {
-  game.date = today;
+function loadGame() {
+  let saved = {};
 
   try {
-    localStorage.setItem(KEY, JSON.stringify(game));
-    localStorage.setItem("hamsterXP", game.xp);
-    localStorage.setItem("hamsterCarrots", game.carrots);
-    localStorage.setItem("hamsterWater", game.waterCount);
+    saved = JSON.parse(localStorage.getItem(GAME_KEY) || "{}");
+  } catch (e) {}
+
+  return {
+    xp: getNumber(saved.xp ?? localStorage.getItem("hamsterXP")),
+    carrots: getNumber(saved.carrots ?? localStorage.getItem("hamsterCarrots")),
+    waterCount: getNumber(saved.waterCount ?? localStorage.getItem("hamsterWater")),
+    feedsToday: saved.date === todayKey() ? getNumber(saved.feedsToday) : 0,
+    watersToday: saved.date === todayKey() ? getNumber(saved.watersToday) : 0
+  };
+}
+
+let game = loadGame();
+
+function saveGame() {
+  try {
+    localStorage.setItem(GAME_KEY, JSON.stringify({
+      ...game,
+      date: todayKey()
+    }));
+
+    localStorage.setItem("hamsterXP", String(game.xp));
+    localStorage.setItem("hamsterCarrots", String(game.carrots));
+    localStorage.setItem("hamsterWater", String(game.waterCount));
   } catch (e) {
-    console.error("Could not save game:", e);
+    console.error("Save error:", e);
   }
 }
 
-function unlock(id, name) {
-  if (game.achievements.includes(id)) return;
-
-  game.achievements.push(id);
-
-  const message = document.getElementById("message");
-  if (message) {
-    message.textContent = "🏆 Achievement unlocked: " + name;
-  }
-}
-
-function checkAchievements() {
-  if (game.carrots >= 1) unlock("first_feed", "First Feeding");
-  if (game.waterCount >= 1) unlock("first_water", "Garden Keeper");
-  if (game.xp >= 100) unlock("level_up", "Level Up!");
-  if (game.carrots >= 10) unlock("carrot_master", "Carrot Master");
-  if (game.waterCount >= 10) unlock("garden_master", "Garden Master");
-}
-
-function renderExtraFeatures() {
-  let panel = document.getElementById("extraFeatures");
-
-  if (!panel) {
-    panel = document.createElement("div");
-    panel.id = "extraFeatures";
-    panel.style.cssText =
-      "background:#315c43;padding:18px;border-radius:16px;margin-top:20px;text-align:left;color:white;";
-
-    const gameBox = document.querySelector(".game");
-    if (gameBox) gameBox.appendChild(panel);
-  }
-
-  if (!panel) return;
-
-  panel.innerHTML = `
-    <h3>🌞 Daily Quests</h3>
-    <p>🥕 Feed hamster: ${Math.min(game.feedsToday, 3)}/3</p>
-    <p>💧 Water garden: ${Math.min(game.watersToday, 3)}/3</p>
-    <p>⭐ Total XP: ${game.xp}</p>
-    <p>🥕 Total carrots: ${game.carrots}</p>
-    <p>🌻 Total watering: ${game.waterCount}</p>
-    <hr>
-    <h3>🏆 Achievements</h3>
-    <p>${game.achievements.includes("first_feed") ? "✅" : "🔒"} First Feeding</p>
-    <p>${game.achievements.includes("first_water") ? "✅" : "🔒"} Garden Keeper</p>
-    <p>${game.achievements.includes("level_up") ? "✅" : "🔒"} Level Up</p>
-    <p>${game.achievements.includes("carrot_master") ? "✅" : "🔒"} Carrot Master</p>
-    <p>${game.achievements.includes("garden_master") ? "✅" : "🔒"} Garden Master</p>
-  `;
+function showMessage(message) {
+  const el = document.getElementById("message");
+  if (el) el.textContent = message;
 }
 
 function updateGame() {
@@ -99,13 +59,8 @@ function updateGame() {
   const level = document.getElementById("level");
 
   if (xp) xp.textContent = game.xp;
+  if (level) level.textContent = "Level " + (Math.floor(game.xp / 100) + 1);
 
-  if (level) {
-    level.textContent = "Level " + (Math.floor(game.xp / 100) + 1);
-  }
-
-  checkAchievements();
-  renderExtraFeatures();
   saveGame();
 }
 
@@ -115,12 +70,9 @@ function feed() {
   game.xp += 10;
 
   const hamster = document.getElementById("hamster");
-  const message = document.getElementById("message");
-
   if (hamster) hamster.textContent = "🐹";
-  if (message) message.textContent =
-    "Yummy! Your hamster loves carrots! 🥕";
 
+  showMessage("Yummy! Your hamster loves carrots! 🥕");
   updateGame();
 }
 
@@ -130,88 +82,105 @@ function water() {
   game.xp += 5;
 
   const garden = document.getElementById("garden");
-  const message = document.getElementById("message");
 
-  if (garden) garden.textContent = "🌷 🌻 🌼 🌸 🌺 🌻";
-  if (message) message.textContent =
-    "Your garden is growing! 🌱";
+  if (garden) {
+    const stages = [
+      "🌱 🌷 🌱 🌼 🌱",
+      "🌷 🌻 🌼 🌸 🌺",
+      "🌻 🌺 🌷 🌼 🌸 🌻"
+    ];
 
+    garden.textContent = stages[
+      Math.min(2, Math.floor(game.waterCount / 3))
+    ];
+  }
+
+  showMessage("Your garden is growing! 🌱");
   updateGame();
 }
 
-// Squeekchain API - real public data
+// SQUEEKCHAIN API
+
 async function refreshSqueek() {
-  const statusBox = document.getElementById("chainStatus");
-  const dataBox = document.getElementById("chainData");
-  const updatedBox = document.getElementById("lastUpdated");
+  const status = document.getElementById("chainStatus");
+  const data = document.getElementById("chainData");
+  const updated = document.getElementById("lastUpdated");
 
-  if (!statusBox || !dataBox) return;
-
-  statusBox.textContent = "⏳ Connecting to Squeekchain...";
-  dataBox.textContent = "Loading real blockchain data...";
+  if (status) status.textContent = "Connecting to Squeekchain...";
 
   try {
-    const endpoints = [
-      ["Pipeline Status", "/status"],
-      ["SqueekCore", "/core"],
-      ["Recent Events", "/events?category=all&limit=5"]
-    ];
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
 
-    const results = await Promise.all(
-      endpoints.map(async ([name, path]) => {
-        const response = await fetch(API + path, {
-          method: "GET",
-          headers: { "Accept": "application/json" },
+    let results;
+
+    try {
+      const responses = await Promise.all([
+        fetch(API_BASE + "/status", {
+          signal: controller.signal,
           cache: "no-store"
-        });
+        }),
+        fetch(API_BASE + "/core", {
+          signal: controller.signal,
+          cache: "no-store"
+        })
+      ]);
 
-        if (!response.ok) {
-          throw new Error(name + ": HTTP " + response.status);
-        }
+      if (!responses[0].ok || !responses[1].ok) {
+        throw new Error("API response error");
+      }
 
-        return [name, await response.json()];
-      })
-    );
-
-    const data = Object.fromEntries(results);
-    const core = data["SqueekCore"];
-
-    if (core.status === "unavailable") {
-      statusBox.textContent =
-        "⚠️ SqueekCore unavailable: " + (core.reason || "Unknown reason");
-    } else {
-      statusBox.textContent =
-        "✅ API connected | Network: " +
-        (core.chain?.target || "Checking") +
-        " | Chain ID: " +
-        (core.chain?.chainId || "Unknown");
+      results = await Promise.all(
+        responses.map(response => response.json())
+      );
+    } finally {
+      clearTimeout(timeout);
     }
 
-    dataBox.textContent = JSON.stringify(data, null, 2);
+    if (status) {
+      status.textContent = "🟢 Squeekchain API connected";
+    }
 
-    if (updatedBox) {
-      updatedBox.textContent =
-        "Last updated: " + new Date().toLocaleString();
+    if (data) {
+      data.textContent = JSON.stringify({
+        status: results[0],
+        core: results[1]
+      }, null, 2);
+    }
+
+    if (updated) {
+      updated.textContent = "Last checked: " + new Date().toLocaleString();
     }
 
   } catch (error) {
-    statusBox.textContent = "⚠️ Squeekchain connection error";
-
-    dataBox.textContent =
-      error.message +
-      "\nPlease try refreshing later. No fake data is displayed.";
-
-    if (updatedBox) {
-      updatedBox.textContent = "Update failed";
+    if (status) {
+      status.textContent = "⚠️ Squeekchain API unavailable";
     }
 
-    console.error("Squeekchain API:", error);
+    if (data) {
+      data.textContent =
+        "Could not retrieve live blockchain data.\n" +
+        "Reason: " + error.message;
+    }
+
+    if (updated) {
+      updated.textContent = "Failed check: " + new Date().toLocaleString();
+    }
+
+    console.error("Squeekchain API error:", error);
   }
 }
 
-updateGame();
+// Make functions available to HTML buttons
+window.feed = feed;
+window.water = water;
+window.refreshSqueek = refreshSqueek;
 
+// Start game
 document.addEventListener("DOMContentLoaded", () => {
+  updateGame();
   refreshSqueek();
+  setInterval(refreshSqueek, 30000);
 });
+
 
