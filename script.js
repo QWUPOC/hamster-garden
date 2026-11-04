@@ -1,367 +1,426 @@
+"use strict";
 
-/* =====================================
-   HAMSTER GARDEN 3.0
-   SQUEEKCHAIN LIVE DASHBOARD
-   ===================================== */
-
-// ---------- GAME DATA ----------
+/* =========================================
+   HAMSTER GARDEN
+   Local game + real Squeekchain API
+========================================= */
 
 const GAME_KEY = "hamsterGardenV3";
-const TODAY = new Date().toLocaleDateString("en-CA");
+const API_BASE = "https://api.squeekchain.com/v1";
+const LEVEL_XP = 100;
+const DAILY_TARGET = 3;
+const REFRESH_INTERVAL = 30000;
 
-let oldData = {};
+const $ = (id) => document.getElementById(id);
 
-try {
-  oldData = JSON.parse(
-    localStorage.getItem(GAME_KEY) || "{}"
-  );
-} catch (error) {
-  oldData = {};
+function localDateKey() {
+  const d = new Date();
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0")
+  ].join("-");
 }
 
-let game = {
-  xp: oldData.xp ?? Number(localStorage.getItem("hamsterXP")) ?? 0,
-  carrots: oldData.carrots ?? Number(localStorage.getItem("hamsterCarrots")) ?? 0,
-  waterCount: oldData.waterCount ?? Number(localStorage.getItem("hamsterWater")) ?? 0,
-
-  feedsToday: oldData.date === TODAY ? (oldData.feedsToday || 0) : 0,
-  watersToday: oldData.date === TODAY ? (oldData.watersToday || 0) : 0,
-
-  achievements: oldData.achievements || []
-};
-
-// ---------- SAVE GAME ----------
-
-function saveGame() {
-  game.date = TODAY;
-
-  localStorage.setItem(GAME_KEY, JSON.stringify(game));
-  localStorage.setItem("hamsterXP", game.xp);
-  localStorage.setItem("hamsterCarrots", game.carrots);
-  localStorage.setItem("hamsterWater", game.waterCount);
+function safeNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : 0;
 }
 
-// ---------- LEVEL SYSTEM ----------
-
-function getLevel() {
-  return Math.floor(game.xp / 100) + 1;
-}
-
-// ---------- ACHIEVEMENTS ----------
-
-function unlock(id, name) {
-  if (game.achievements.includes(id)) return;
-
-  game.achievements.push(id);
-
-  const message = document.getElementById("message");
-
-  if (message) {
-    message.textContent = "🏆 Achievement unlocked: " + name;
-  }
-
-  saveGame();
-}
-
-function checkAchievements() {
-  if (game.carrots >= 1)
-    unlock("first_feed", "First Feeding");
-
-  if (game.waterCount >= 1)
-    unlock("first_water", "Garden Keeper");
-
-  if (game.xp >= 100)
-    unlock("level_up", "Level Up");
-
-  if (game.carrots >= 10)
-    unlock("carrot_master", "Carrot Master");
-
-  if (game.waterCount >= 10)
-    unlock("garden_master", "Garden Master");
-}
-
-// ---------- DAILY QUESTS ----------
-
-function renderExtraFeatures() {
-  let panel = document.getElementById("extraFeatures");
-
-  if (!panel) {
-    const container = document.querySelector(".game");
-
-    if (!container) return;
-
-    panel = document.createElement("div");
-    panel.id = "extraFeatures";
-
-    panel.style.cssText =
-      "background:#315c43;color:white;padding:18px;" +
-      "border-radius:16px;margin-top:20px;text-align:left;";
-
-    container.appendChild(panel);
-  }
-
-  const achievements = [
-    ["first_feed", "🥕 First Feeding"],
-    ["first_water", "🌱 Garden Keeper"],
-    ["level_up", "⭐ Level Up"],
-    ["carrot_master", "🏆 Carrot Master"],
-    ["garden_master", "🌻 Garden Master"]
-  ];
-
-  panel.innerHTML = `
-    <h3>🌞 Daily Quests</h3>
-
-    <p>🥕 Feed hamster:
-      ${Math.min(game.feedsToday, 3)}/3
-    </p>
-
-    <p>💧 Water garden:
-      ${Math.min(game.watersToday, 3)}/3
-    </p>
-
-    <p>⭐ Total XP: ${game.xp}</p>
-    <p>🥕 Total carrots: ${game.carrots}</p>
-    <p>🌻 Total watering: ${game.waterCount}</p>
-
-    <hr>
-
-    <h3>🏆 Achievements</h3>
-
-    ${achievements.map(item => `
-      <p>
-        ${game.achievements.includes(item[0]) ? "✅" : "🔒"}
-        ${item[1]}
-      </p>
-    `).join("")}
-  `;
-}
-
-// ---------- UPDATE GAME ----------
-
-function updateGame() {
-  const xpElement = document.getElementById("xp");
-  const levelElement = document.getElementById("level");
-
-  if (xpElement) {
-    xpElement.textContent = game.xp;
-  }
-
-  if (levelElement) {
-    levelElement.textContent = "Level " + getLevel();
-  }
-
-  checkAchievements();
-  renderExtraFeatures();
-  saveGame();
-}
-
-// ---------- FEED HAMSTER ----------
-
-function feed() {
-  game.carrots++;
-  game.feedsToday++;
-  game.xp += 10;
-
-  const hamster = document.getElementById("hamster");
-  const message = document.getElementById("message");
-
-  if (hamster) hamster.textContent = "🐹";
-
-  if (message) {
-    message.textContent =
-      "Yummy! Your hamster loves carrots! 🥕";
-  }
-
-  updateGame();
-}
-
-// ---------- WATER GARDEN ----------
-
-function water() {
-  game.waterCount++;
-  game.watersToday++;
-  game.xp += 5;
-
-  const garden = document.getElementById("garden");
-  const message = document.getElementById("message");
-
-  if (garden) {
-    garden.textContent = "🌷 🌻 🌼 🌸 🌺 🌻";
-  }
-
-  if (message) {
-    message.textContent =
-      "Your garden is growing! 🌱";
-  }
-
-  updateGame();
-}
-
-// =====================================
-// SQUEEKCHAIN LIVE API
-// =====================================
-
-const SQUEEK_API =
-  "https://api.squeekchain.com/v1";
-
-async function refreshSqueek() {
-  const statusBox = document.getElementById("chainStatus");
-  const dataBox = document.getElementById("chainData");
-  const updatedBox = document.getElementById("lastUpdated");
-
-  if (!statusBox || !dataBox) return;
-
-  statusBox.textContent = "⏳ Connecting to Squeekchain...";
+function loadGame() {
+  let saved = {};
 
   try {
-    const [statusResponse, coreResponse] = await Promise.all([
-      fetch(SQUEEK_API + "/status", {
-        headers: { accept: "application/json" },
-        cache: "no-store"
-      }),
-
-      fetch(SQUEEK_API + "/core", {
-        headers: { accept: "application/json" },
-        cache: "no-store"
-      })
-    ]);
-
-    if (!statusResponse.ok) {
-      throw new Error("Status API HTTP " + statusResponse.status);
-    }
-
-    if (!coreResponse.ok) {
-      throw new Error("Core API HTTP " + coreResponse.status);
-    }
-
-    const status = await statusResponse.json();
-    const coreData = await coreResponse.json();
-
-    // Check API availability
-    if (status.schemaVersion !== 1) {
-      throw new Error("Unsupported status API schema");
-    }
-
-    if (coreData.schemaVersion !== 1) {
-      throw new Error("Unsupported core API schema");
-    }
-
-    const measurement = status.measurement || {};
-    const anchor = status.builder?.anchor || {};
-    const settled = coreData.core || {};
-
-    const isOnline = measurement.freshness === "online";
-    const isCoreAvailable = coreData.status === "available";
-
-    statusBox.textContent =
-      (isOnline ? "🟢 Wheel Online" : "🟡 Wheel: " +
-      (measurement.freshness || "Unknown")) +
-      " | " +
-      (isCoreAvailable ? "⛓️ Core Available" :
-      "Core: " + (coreData.reason || coreData.status || "Unknown"));
-
-    // Convert units
-    const rpm = measurement.rpmMilli != null
-      ? (measurement.rpmMilli / 1000).toFixed(2)
-      : "Unknown";
-
-    const speed = measurement.speedMmPerSecond != null
-      ? (measurement.speedMmPerSecond / 1000).toFixed(3) + " m/s"
-      : "Unknown";
-
-    const distance = measurement.distanceMm != null
-      ? (measurement.distanceMm / 1000).toFixed(2) + " m"
-      : "Unknown";
-
-    // Block progress uses 1 billion units per block
-    const progress = anchor.blockProgress != null
-      ? (Number(anchor.blockProgress) / 10000000).toFixed(2) + "%"
-      : "Unknown";
-
-    const dashboard = `
-🐹 HAMSTER GARDEN 3.0
-================================
-
-📡 PIPELINE STATUS
-
-Wheel: ${measurement.freshness || "Unknown"}
-Hardware: ${measurement.provenance || "Unknown"}
-Core status: ${measurement.coreStatus || "Unknown"}
-
-================================
-
-⚡ HAMSTER MEASUREMENTS
-
-Wheel RPM: ${rpm}
-Speed: ${speed}
-Distance: ${distance}
-Work Units: ${measurement.cumulativeWorkUnits || "Unknown"}
-
-================================
-
-⛓️ BLOCKCHAIN DATA
-
-Network: ${coreData.chain?.target || "Unknown"}
-Chain ID: ${coreData.chain?.chainId || "Unknown"}
-
-Settled Block Height:
-${isCoreAvailable ? (settled.blockHeight ?? "Unknown") : "Unavailable"}
-
-Builder Anchor Block Height:
-${anchor.blockHeight ?? "Unknown"}
-
-Builder Block Progress:
-${progress}
-
-Oracle: ${status.oracle?.state || "Unknown"}
-
-Settlement Queue:
-${status.settlementQueue?.state || "Unknown"}
-
-================================
-
-🔐 TRANSACTION
-
-Latest confirmed transaction:
-${status.settlementQueue?.latestSubmission?.transactionHash || "Unknown"}
-
-================================
-
-🕒 API Generated:
-${status.generatedAt || "Unknown"}
-
-Last checked:
-${new Date().toLocaleString()}
-`;
-
-    dataBox.textContent = dashboard;
-
-    if (updatedBox) {
-      updatedBox.textContent =
-        "Updated: " + new Date().toLocaleString();
-    }
-
+    saved = JSON.parse(localStorage.getItem(GAME_KEY) || "{}");
   } catch (error) {
-    statusBox.textContent =
-      "⚠️ Squeekchain API unavailable";
+    console.warn("Could not read saved game:", error);
+  }
 
-    dataBox.textContent =
-      "Could not load live data.\n\n" +
-      error.message +
-      "\n\nPlease try again later.";
+  const legacyXP = localStorage.getItem("hamsterXP");
+  const legacyCarrots = localStorage.getItem("hamsterCarrots");
+  const legacyWater = localStorage.getItem("hamsterWater");
+
+  const isToday = saved.date === localDateKey();
+
+  return {
+    xp: safeNumber(saved.xp ?? legacyXP),
+    carrots: safeNumber(saved.carrots ?? legacyCarrots),
+    waterCount: safeNumber(saved.waterCount ?? legacyWater),
+    feedsToday: isToday ? safeNumber(saved.feedsToday) : 0,
+    watersToday: isToday ? safeNumber(saved.watersToday) : 0,
+    achievements: Array.isArray(saved.achievements)
+      ? saved.achievements
+      : []
+  };
+}
+
+let game = loadGame();
+
+function saveGame() {
+  try {
+    const data = {
+      ...game,
+      date: localDateKey()
+    };
+
+    localStorage.setItem(GAME_KEY, JSON.stringify(data));
+    localStorage.setItem("hamsterXP", String(game.xp));
+    localStorage.setItem("hamsterCarrots", String(game.carrots));
+    localStorage.setItem("hamsterWater", String(game.waterCount));
+    return true;
+  } catch (error) {
+    console.error("Could not save game:", error);
+    showMessage("⚠️ Browser storage is unavailable.");
+    return false;
   }
 }
 
-// =====================================
-// START GAME
-// =====================================
+function getLevel() {
+  return Math.floor(game.xp / LEVEL_XP) + 1;
+}
 
-updateGame();
+function getLevelProgress() {
+  return game.xp % LEVEL_XP;
+}
 
-// Start API connection
-refreshSqueek();
+/* =========================================
+   ACHIEVEMENTS
+========================================= */
 
-// Refresh every 30 seconds
-setInterval(refreshSqueek, 30000);
+const ACHIEVEMENTS = [
+  { id: "first_feed", name: "First Feeding", icon: "🥕",
+    condition: () => game.carrots >= 1 },
+  { id: "first_water", name: "Garden Keeper", icon: "🌱",
+    condition: () => game.waterCount >= 1 },
+  { id: "level_up", name: "Level Up", icon: "⭐",
+    condition: () => game.xp >= LEVEL_XP },
+  { id: "carrot_master", name: "Carrot Master", icon: "🏆",
+    condition: () => game.carrots >= 10 },
+  { id: "garden_master", name: "Garden Master", icon: "🌻",
+    condition: () => game.waterCount >= 10 }
+];
 
+function checkAchievements() {
+  let unlocked = null;
 
+  for (const achievement of ACHIEVEMENTS) {
+    if (
+      !game.achievements.includes(achievement.id) &&
+      achievement.condition()
+    ) {
+      game.achievements.push(achievement.id);
+      unlocked = achievement;
+    }
+  }
+
+  if (unlocked) {
+    showMessage("🏆 Achievement unlocked: " + unlocked.name);
+  }
+}
+
+function renderAchievements() {
+  const container = $("achievements");
+  if (!container) return;
+
+  container.replaceChildren();
+
+  for (const achievement of ACHIEVEMENTS) {
+    const item = document.createElement("div");
+    item.className = "achievement";
+
+    const isUnlocked = game.achievements.includes(achievement.id);
+
+    const icon = document.createElement("span");
+    icon.textContent = isUnlocked ? "✅" : "🔒";
+
+    const name = document.createElement("span");
+    name.textContent = achievement.icon + " " + achievement.name;
+
+    item.append(icon, name);
+    container.appendChild(item);
+  }
+}
+
+/* =========================================
+   GAME DISPLAY
+========================================= */
+
+function showMessage(message) {
+  const element = $("message");
+  if (element) element.textContent = message;
+}
+
+function renderGame() {
+  const level = getLevel();
+  const progress = getLevelProgress();
+
+  $("xp").textContent = game.xp;
+  $("level").textContent = "Level " + level;
+  $("xpProgress").style.width = progress + "%";
+  $("levelProgress").textContent =
+    progress + " / " + LEVEL_XP + " XP to next level";
+
+  $("feedQuest").textContent =
+    Math.min(game.feedsToday, DAILY_TARGET) + " / " + DAILY_TARGET;
+
+  $("waterQuest").textContent =
+    Math.min(game.watersToday, DAILY_TARGET) + " / " + DAILY_TARGET;
+
+  $("carrotTotal").textContent = game.carrots;
+  $("waterTotal").textContent = game.waterCount;
+  $("totalXP").textContent = game.xp;
+
+  renderAchievements();
+}
+
+function updateGame() {
+  checkAchievements();
+  renderGame();
+  saveGame();
+}
+
+/* =========================================
+   GAME ACTIONS
+========================================= */
+
+function feed() {
+  game.carrots += 1;
+  game.feedsToday += 1;
+  game.xp += 10;
+
+  $("hamster").textContent = "🐹";
+  showMessage("Yummy! Your hamster loves carrots! 🥕");
+
+  updateGame();
+}
+
+function water() {
+  game.waterCount += 1;
+  game.watersToday += 1;
+  game.xp += 5;
+
+  const garden = $("garden");
+  const stages = [
+    "🌱 🌷 🌱 🌼 🌱",
+    "🌷 🌻 🌼 🌸 🌺",
+    "🌻 🌺 🌷 🌼 🌸 🌻"
+  ];
+
+  garden.textContent = stages[
+    Math.min(2, Math.floor(game.waterCount / 3))
+  ];
+
+  showMessage("Your garden is growing! 🌱");
+  updateGame();
+}
+
+/* =========================================
+   REAL SQUEEKCHAIN API
+========================================= */
+
+function displayValue(id, value) {
+  const element = $(id);
+  if (element) {
+    element.textContent =
+      value === null || value === undefined || value === ""
+        ? "Not available"
+        : String(value);
+  }
+}
+
+async function fetchJSON(path) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
+
+  try {
+    const response = await fetch(API_BASE + path, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
+
+    return await response.json();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function resetNetworkDisplay() {
+  const fields = [
+    "networkName", "chainId", "wheelStatus", "coreStatus",
+    "rpm", "speed", "distance", "workUnits",
+    "blockHeight", "builderBlock", "oracleStatus",
+    "queueStatus", "transactionHash"
+  ];
+
+  fields.forEach(id => displayValue(id, "Not available"));
+}
+
+function formatNumber(value, divisor, decimals, suffix = "") {
+  if (value === null || value === undefined) {
+    return "Not available";
+  }
+
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "Not available";
+
+  return (number / divisor).toFixed(decimals) + suffix;
+}
+
+function renderNetwork(status, coreData) {
+  const measurement = status.measurement || {};
+  const anchor = status.builder?.anchor || {};
+  const core = coreData.core || {};
+  const chain = coreData.chain || {};
+
+  displayValue("networkName", chain.target);
+  displayValue("chainId", chain.chainId);
+
+  displayValue(
+    "wheelStatus",
+    measurement.freshness
+  );
+
+  displayValue(
+    "coreStatus",
+    coreData.status
+  );
+
+  displayValue(
+    "rpm",
+    formatNumber(measurement.rpmMilli, 1000, 2)
+  );
+
+  displayValue(
+    "speed",
+    formatNumber(
+      measurement.speedMmPerSecond, 1000, 3, " m/s"
+    )
+  );
+
+  displayValue(
+    "distance",
+    formatNumber(measurement.distanceMm, 1000, 2, " m")
+  );
+
+  displayValue("workUnits", measurement.cumulativeWorkUnits);
+
+  displayValue(
+    "blockHeight",
+    coreData.status === "available" ? core.blockHeight : "Unavailable"
+  );
+
+  displayValue("builderBlock", anchor.blockHeight);
+  displayValue("oracleStatus", status.oracle?.state);
+  displayValue("queueStatus", status.settlementQueue?.state);
+
+  displayValue(
+    "transactionHash",
+    status.settlementQueue?.latestSubmission?.transactionHash
+  );
+
+  const online = measurement.freshness === "online";
+  const available = coreData.status === "available";
+
+  $("chainStatus").textContent =
+    (online ? "🟢 Wheel online" : "🟡 Wheel: " +
+      (measurement.freshness || "Unknown")) +
+    " | " +
+    (available ? "⛓️ Core available" : "Core: " +
+      (coreData.reason || coreData.status || "Unknown"));
+
+  $("apiIndicator").textContent =
+    online && available ? "LIVE" : "PARTIAL DATA";
+
+  $("apiIndicator").className =
+    "indicator " + (online && available ? "online" : "partial");
+
+  $("chainData").textContent = JSON.stringify(
+    { status, core: coreData },
+    null,
+    2
+  );
+
+  $("lastUpdated").textContent =
+    "Last checked: " + new Date().toLocaleString();
+}
+
+let apiRequestRunning = false;
+
+async function refreshSqueek() {
+  if (apiRequestRunning) return;
+
+  apiRequestRunning = true;
+
+  const button = $("refreshButton");
+  const statusBox = $("chainStatus");
+
+  button.disabled = true;
+  button.textContent = "⏳ Loading...";
+  statusBox.textContent = "Connecting to Squeekchain...";
+
+  try {
+    const [status, coreData] = await Promise.all([
+      fetchJSON("/status"),
+      fetchJSON("/core")
+    ]);
+
+    if (
+      status.schemaVersion !== 1 ||
+      coreData.schemaVersion !== 1
+    ) {
+      throw new Error("Unsupported API response schema.");
+    }
+
+    renderNetwork(status, coreData);
+
+  } catch (error) {
+    resetNetworkDisplay();
+
+    $("apiIndicator").textContent = "OFFLINE";
+    $("apiIndicator").className = "indicator offline";
+
+    statusBox.textContent = "⚠️ Squeekchain API unavailable";
+
+    $("chainData").textContent =
+      "Live data could not be retrieved.\n" +
+      "Reason: " + error.message + "\n\n" +
+      "No simulated blockchain data is displayed.";
+
+    $("lastUpdated").textContent =
+      "Failed check: " + new Date().toLocaleString();
+
+    console.error("Squeekchain API error:", error);
+
+  } finally {
+    apiRequestRunning = false;
+    button.disabled = false;
+    button.textContent = "🔄 Refresh network data";
+  }
+}
+
+/* =========================================
+   STARTUP
+========================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+  $("feedButton").addEventListener("click", feed);
+  $("waterButton").addEventListener("click", water);
+  $("refreshButton").addEventListener("click", refreshSqueek);
+
+  updateGame();
+
+  resetNetworkDisplay();
+  refreshSqueek();
+
+  setInterval(refreshSqueek, REFRESH_INTERVAL);
+});
+
+window.feed = feed;
+window.water = water;
+window.refreshSqueek = refreshSqueek;
