@@ -1,3 +1,11 @@
+:root {
+  --green-dark: #174b32;
+  --green: #267346;
+  --green-light: #d8f3dc;
+  --cream: #fffdf4;
+  --text: #24452e;
+  --shadow: 0 10px 35px rgba(20, 60, 35, .12);
+}
 
 * {
   box-sizing: border-box;
@@ -6,117 +14,407 @@
 body {
   margin: 0;
   padding: 20px;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #d8f3dc, #95d5b2);
-  color: #24452e;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top, #f4ffe9, transparent 55%),
+    linear-gradient(135deg, #d8f3dc, #95d5b2);
+  min-height: 100vh;
+}
+
+.app {
+  width: 100%;
+  max-width: 760px;
+  margin: auto;
+}
+
+.hero {
   text-align: center;
+  padding: 25px 10px;
+}
+
+.brand {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: var(--green);
+}
+
+.hero h1 {
+  font-size: clamp(26px, 5vw, 38px);
+  margin: 12px 0;
+  color: var(--green-dark);
+}
+
+.hero p {
+  color: #52745d;
+  line-height: 1.6;
+}
+
+.card {
+  background: white;
+  border-radius: 24px;
+  padding: 25px;
+  margin: 22px 0;
+  box-shadow: var(--shadow);
 }
 
 .game {
-  max-width: 650px;
-  margin: 20px auto;
-  padding: 25px;
-  background: #ffffff;
-  border-radius: 24px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+  text-align: center;
 }
 
-h1 {
-  color: #267346;
-  font-size: 32px;
+.hamster-area {
+  padding: 15px;
 }
 
 .hamster {
   font-size: 100px;
-  margin: 20px;
-  animation: bounce 2s infinite;
+  margin: 15px;
+  animation: bounce 2s ease-in-out infinite;
 }
 
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-9px); }
+}
+
+#level {
+  color: var(--green);
+  margin-bottom: 8px;
+}
+
+.progress-track {
+  height: 12px;
+  background: #e7f1e8;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 15px 0 8px;
+}
+
+.progress-fill {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #42ad69, #a4df77);
+  border-radius: inherit;
+  transition: width .3s ease;
+}
+
+.muted {
+  color: #819487;
+  font-size: 12px;
 }
 
 .garden {
-  padding: 20px;
+  padding: 25px 12px;
   margin: 20px 0;
-  background: #e8f5e9;
-  border-radius: 15px;
-  font-size: 35px;
+  background: linear-gradient(135deg, #e8f5e9, #f4fbe9);
+  border: 1px solid #d7ebd8;
+  border-radius: 18px;
+  font-size: clamp(27px, 7vw, 40px);
+  min-height: 95px;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 button {
   border: none;
-  border-radius: 12px;
-  padding: 13px 20px;
-  margin: 7px;
+  border-radius: 13px;
+  padding: 14px 20px;
   background: #31965b;
   color: white;
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
+  transition: transform .15s, background .15s;
 }
 
 button:hover {
   background: #217444;
+  transform: translateY(-2px);
 }
 
-#message {
-  min-height: 25px;
-  font-weight: bold;
+button:active {
+  transform: scale(.97);
 }
 
-#liveRace {
-  max-width: 650px;
-  margin: 25px auto;
-  padding: 25px;
+button:focus-visible {
+  outline: 3px solid #f3c969;
+  outline-offset: 3px;
+}
+
+button:disabled {
+  opacity: .6;
+  cursor: wait;
+  transform: none;
+}
+
+.message {
+  min-height: 28px;
+  margin: 20px 0;
+  color: var(--green);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.extra-features {
+  padding: 20px;
+  margin-top: 25px;
+  text-align: left;
+  color: white;
+  background: var(--green-dark);
+  border-radius: 18px;
+}
+
+.extra-features h3 {
+  margin-top: 10px;
+  color: #b9edc7;
+}
+
+.extra-features hr {
+  border: 0;
+  border-top: 1px solid rgba(255,255,255,.2);
+  margin: 20px 0;
+}
+
+.quest,
+.stats > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+
+.stats > div:last-child {
+  border-bottom: 0;
+}
+
+.achievements {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.achievement {
+  padding: 11px;
+  background: rgba(255,255,255,.1);
+  border-radius: 10px;
+  font-size: 13px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.blockchain {
   background: #183b2b;
   color: white;
-  border-radius: 20px;
-  text-align: left;
 }
 
-#liveRace h2 {
-  text-align: center;
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.section-heading h2 {
+  margin-top: 7px;
   color: #a7f3b5;
 }
 
+.eyebrow {
+  color: #a7d9b4;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.indicator {
+  padding: 7px 12px;
+  border-radius: 20px;
+  background: #405447;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.indicator.online {
+  background: #236b42;
+  color: #c4ffd2;
+}
+
+.indicator.partial {
+  background: #715b25;
+  color: #ffedb0;
+}
+
+.indicator.offline {
+  background: #783c3c;
+  color: #ffd0d0;
+}
+
 #chainStatus {
-  padding: 12px;
+  padding: 13px;
   background: #28583e;
+  border-radius: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.blockchain h3 {
+  margin-top: 25px;
+  color: #b9edc7;
+}
+
+.network-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.network-item {
+  min-width: 0;
+  padding: 15px;
+  background: #234a36;
+  border-radius: 12px;
+}
+
+.network-item span {
+  display: block;
+  color: #b9d9c3;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.network-item strong {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  color: white;
+}
+
+.hash {
+  padding: 13px;
+  background: #10291e;
   border-radius: 10px;
-  font-weight: bold;
+  overflow-wrap: anywhere;
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.api-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.secondary {
+  background: #397c58;
+}
+
+.secondary:hover {
+  background: #4b946b;
+}
+
+details {
+  padding: 15px;
+  background: #10291e;
+  border-radius: 12px;
+}
+
+summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: #b9edc7;
 }
 
 #chainData {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  font-size: 13px;
-  line-height: 1.7;
-  background: #10291e;
-  padding: 15px;
-  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  max-height: 400px;
+  overflow: auto;
+  color: #d6edda;
 }
 
-#lastUpdated {
+.disclaimer {
+  margin-top: 20px;
   color: #b9d9c3;
   font-size: 12px;
+  line-height: 1.6;
 }
 
-#extraFeatures {
-  margin-top: 20px;
+footer {
+  padding: 20px;
+  text-align: center;
+  color: #52745d;
+  font-size: 12px;
+  line-height: 1.7;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 520px) {
   body {
     padding: 10px;
   }
 
-  .game, #liveRace {
-    padding: 15px;
+  .card {
+    padding: 17px;
+    border-radius: 18px;
   }
 
-  h1 {
-    font-size: 26px;
+  .hamster {
+    font-size: 85px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+
+  .achievements {
+    grid-template-columns: 1fr;
+  }
+
+  .network-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .api-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .api-actions button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
   }
 }
