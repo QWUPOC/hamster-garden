@@ -155,41 +155,54 @@ async function refreshSqueek() {
 }
 
 refreshSqueek();
-setInterval(refreshSqueek, 30000);
 
-async function showRaceDashboard() {
+async function refreshSqueek() {
   const box = document.getElementById("chainData");
   const status = document.getElementById("chainStatus");
+  const updated = document.getElementById("lastUpdated");
 
   if (!box || !status) return;
+
+  status.textContent = "⏳ Connecting to Squeekchain...";
 
   try {
     const response = await fetch(
       "https://api.squeekchain.com/v1/status"
     );
 
-    if (!response.ok) throw new Error("API error");
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
 
     const data = await response.json();
     const m = data.measurement || {};
     const b = data.builder?.anchor || {};
 
-    status.textContent = "🟢 Squeekchain Online";
+    status.textContent =
+      m.freshness === "online"
+        ? "🟢 Squeekchain Online"
+        : "🟡 Squeekchain: " + (m.freshness || "Unknown");
 
     box.textContent =
       "🐹 HAMSTER GARDEN LIVE DASHBOARD\n\n" +
       "🌐 Network: Sepolia\n" +
-      "📡 Status: " + m.freshness + "\n" +
+      "📡 Status: " + (m.freshness || "Unknown") + "\n" +
       "⛓️ Block Height: " + (b.blockHeight ?? "Unknown") + "\n" +
       "📊 Block Progress: " + (b.blockProgress ?? "Unknown") + "\n" +
       "⚡ Total Work Units: " + (m.cumulativeWorkUnits ?? "Unknown") + "\n" +
-      "🔐 Oracle: " + (data.oracle?.state ?? "Unknown") + "\n" +
-      "🕒 Updated: " + new Date().toLocaleString();
+      "🔐 Oracle: " + (data.oracle?.state ?? "Unknown");
+
+    if (updated) {
+      updated.textContent =
+        "Updated: " + new Date().toLocaleString();
+    }
+
   } catch (error) {
     status.textContent = "⚠️ API temporarily unavailable";
     box.textContent = error.message;
   }
 }
 
-showRaceDashboard();
-setInterval(showRaceDashboard, 30000);
+refreshSqueek();
+setInterval(refreshSqueek, 30000);
+
